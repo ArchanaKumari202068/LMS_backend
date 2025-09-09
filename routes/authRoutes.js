@@ -1,16 +1,26 @@
 const express = require("express");
-const passport = require("passport");
-const { signup, login, sendWelcome } = require("../controllers/authControllers");
+const { OAuth2Client } = require("google-auth-library"); // import properly
+const jwt = require("jsonwebtoken");
+const User = require("../models/User"); // add User model
+const {
+  signup,
+  login,
+  sendWelcome,
+  googleLogin,
+  logout,
+} = require("../controllers/authControllers");
 const { verifyToken, isAdmin } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// Local
+// -------------------- Local Auth --------------------
 router.post("/signup", signup);
 router.post("/login", login);
 router.post("/send-welcome-email", sendWelcome);
+router.post("/logout", logout);
 
-// Protected examples
+// -------------------- Protected Routes --------------------
 router.get("/protected", verifyToken, (req, res) => {
   res.json({ msg: "This is a protected route", user: req.user });
 });
@@ -19,32 +29,7 @@ router.get("/admin-only", verifyToken, isAdmin, (req, res) => {
   res.json({ msg: "This is an admin-only route" });
 });
 
-//  Google OAuth
-router.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
+// -------------------- Google Login --------------------
+router.post("/auth/google", googleLogin); // ✅ delegate to controller
 
-router.get(
-  "/auth/google/callback",
-  passport.authenticate("google", {
-    failureRedirect: "/login",
-    session: true,
-  }),
-  (req, res) => {
-    // Successful OAuth login, redirect to frontend
-    res.redirect(process.env.CLIENT_URL || "http://localhost:5173");
-  }
-);
-
-
-router.get("/protected", verifyToken, (req, res) => {
-  res.json({ msg: "This is protected", user: req.user });
-});
-
-router.post("/logout", (req, res) => {
-  res.clearCookie("token");
-  req.logout?.(); 
-  res.json({ message: "Logged out" });
-});
 module.exports = router;

@@ -6,19 +6,10 @@ const bookSchema = new mongoose.Schema(
     author: { type: String },
     description: { type: String },
 
-    isbn: {
-      type: String,
-      unique: true,
-      sparse: true, // Allows some books to not have ISBN
-    },
+    isbn: { type: String, unique: true, sparse: true },
+    qrCodeData: { type: String, unique: true, sparse: true },
 
-    qrCodeData: {
-      type: String,
-      unique: true,
-      sparse: true, // Allows some books to not have QR
-    },
-
-    image: { type: String }, // Book cover (Cloudinary/public URL)
+    image: { type: String }, // Book cover / camera capture
 
     source: {
       type: String,
@@ -29,11 +20,6 @@ const bookSchema = new mongoose.Schema(
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "BookCategory",
-      required: true,
-    },
-    library: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Library",
       required: true,
     },
 
@@ -49,3 +35,4 @@ const bookSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("Book", bookSchema);
+
