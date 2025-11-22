@@ -1,4 +1,3 @@
-require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -9,28 +8,24 @@ require("./config/passport");
 const authRoutes = require("./routes/authRoutes");
 const bookRoutes = require("./routes/bookRoutes");
 const bookCategoryRoutes = require("./routes/bookCategoryRoutes");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const app = express();
 
-// CORS
-// app.use(
-//   cors({
-//     origin: process.env.CLIENT_URL,
-
-//     credentials: true,
-//   })
-// );
-const corsOptions ={
-    origin:'http://localhost:5173', 
-    credentials:true,            //access-control-allow-credentials:true
-    optionSuccessStatus:200
-}
+// --- CORS ---
+const corsOptions = {
+  origin: "http://localhost:5173", // your frontend origin (adjust if deployed)
+  credentials: true,
+  optionSuccessStatus: 200,
+};
 app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(cookieParser());
 
-// Session for passport
+// --- Session & Passport ---
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "yoursecret",
@@ -41,22 +36,18 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// MongoDB
+// --- MongoDB Connection ---
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() =>
-    console.log(`✅ MongoDB Connected to: ${process.env.MONGO_URI}`)
-  )
-  .catch((err) => console.error(err));
+  .then(() => console.log(`✅ MongoDB Connected to: ${process.env.MONGO_URI}`))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// Routes
-app.use("/api", authRoutes);
+// --- API Routes ---
+app.use("/api/auth", authRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/categories", bookCategoryRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
-  console.log(`🚀 Server on http://localhost:${PORT}`)
+  console.log(`🚀 Server running at http://localhost:${PORT}`)
 );
-
-

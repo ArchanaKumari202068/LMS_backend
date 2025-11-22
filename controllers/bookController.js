@@ -1,73 +1,66 @@
 const Book = require("../models/Book");
 
-// Create new book
+// Create book
 exports.createBook = async (req, res) => {
   try {
-    const data = {
-      ...req.body,
-      scannedBy: req.body.scannedBy || null,
-      scannedAt: req.body.source !== "manual" ? new Date() : null,
-    };
-
-    const book = new Book(data);
+    const book = new Book(req.body);
     await book.save();
-
     res.status(201).json(book);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-// Get all books
-exports.getBooks = async (req, res) => {
+// fetch all books (search and pagination)
+exports.fetchBooks = async (req, res) => {
   try {
-    const books = await Book.find()
-      .populate("category", "name")
-      .populate("scannedBy", "name email")
-      .sort({ createdAt: -1 });
+    const { page = 1, limit = 10, category, search = "" } = req.query;
+    const query = {};
 
-    res.json(books);
+    // Optional category filter
+    if (category) query.category = category;
+
+    // Optional search by title, author, or ISBN
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { author: { $regex: search, $options: "i" } },
+        { isbn: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const totalBooks = await Book.countDocuments(query);
+    const totalPages = Math.ceil(totalBooks / limit);
+
+    const books = await Book.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    res.json({ books, totalPages });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-// pagination
 
-exports.fetchBooks = async () => {
-  try {
-    const res = await axios.get(`/books?page=${page}&limit=10&search=${search}`);
-    const { books = [], totalPages = 1 } = res.data || {};
-    setBooks(books);
-    setTotalPages(totalPages || 1);
-  } catch (err) {
-    console.error("Error fetching books:", err);
-    setBooks([]);       // fallback
-    setTotalPages(1);   // fallback
-  }
-};
-
-
-// Get single book
+// Single book fetch by MongoDB ID
 exports.getBook = async (req, res) => {
   try {
-    const book = await Book.findById(req.params.id)
-      .populate("category", "name")
-      .populate("scannedBy", "name email");
-
+    const { id } = req.params;
+    const book = await Book.findById(id);
     if (!book) return res.status(404).json({ error: "Book not found" });
     res.json(book);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: "Invalid book ID" });
   }
 };
 
 // Update book
 exports.updateBook = async (req, res) => {
   try {
-    const book = await Book.findByIdAndUpdate(req.params.id, req.body, { new: true })
-      .populate("category", "name")
-      .populate("scannedBy", "name email");
-
+    const book = await Book.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     if (!book) return res.status(404).json({ error: "Book not found" });
     res.json(book);
   } catch (err) {
