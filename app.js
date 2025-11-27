@@ -8,6 +8,7 @@ require("./config/passport");
 const authRoutes = require("./routes/authRoutes");
 const bookRoutes = require("./routes/bookRoutes");
 const bookCategoryRoutes = require("./routes/bookCategoryRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -46,6 +47,7 @@ mongoose
 app.use("/api/auth", authRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/categories", bookCategoryRoutes);
+app.use('/api/admin', adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>

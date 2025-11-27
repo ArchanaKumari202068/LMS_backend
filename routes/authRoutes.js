@@ -30,6 +30,6 @@ router.get("/admin-only", verifyToken, isAdmin, (req, res) => {
 });
 
 // -------------------- Google Login --------------------
-router.post("/auth/google", googleLogin); // ✅ delegate to controller
+router.post("/auth/google", googleLogin);
 
 module.exports = router;
