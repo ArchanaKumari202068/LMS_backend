@@ -1,15 +1,82 @@
 const Book = require("../models/Book");
+const { generateQrString } = require("../utils/generateQrCode");
 
 // Create book
 exports.createBook = async (req, res) => {
   try {
-    const book = new Book(req.body);
+    const value = req.body;
+    const incomingQty = Number(value.quantity || 1);
+
+    //  Check if book with same ISBN exists
+    const existingBook = value.isbn
+      ? await Book.findOne({ isbn: value.isbn })
+      : null;
+
+    if (existingBook) {
+      //  Increase quantity & available copies
+      existingBook.quantity += incomingQty;
+      existingBook.availableCopies += incomingQty;
+
+      // optional updates
+      existingBook.scannedAt = new Date();
+      existingBook.scannedBy = value.scannedBy || existingBook.scannedBy;
+
+      await existingBook.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Book already exists. Quantity updated.",
+        data: existingBook,
+      });
+    }
+
+    //  Create NEW book
+    const qrPayload = JSON.stringify({
+      bookId: value.isbn,
+      title: value.title,
+    });
+
+    const qrCodeString = await generateQrString(qrPayload);
+
+    const book = new Book({
+      ...value,
+      quantity: incomingQty,
+      availableCopies: incomingQty,
+      qrCodeData: qrCodeString,
+      scannedAt: new Date(),
+    });
+
     await book.save();
-    res.status(201).json(book);
+
+    res.status(201).json({
+      success: true,
+      message: "New book added successfully",
+      data: book,
+    });
+
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
+
+// exports.createBook = async (req, res) => {
+//   try {
+//     const value = req.body;
+//     const qrPayload = JSON.stringify({
+//       bookId: value.isbn,
+//       title: value.title,
+//     });
+//     const qrCodeString = await generateQrString(qrPayload);
+//     const book = new Book({
+//       ...value,
+//       qrCodeData: qrCodeString,
+//     });
+//     await book.save();
+//     res.status(201).json(book);
+//   } catch (err) {
+//     res.status(400).json({ error: err.message });
+//   }
+// };
 
 // fetch all books (search and pagination)
 exports.fetchBooks = async (req, res) => {

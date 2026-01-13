@@ -6,7 +6,7 @@ const bookSchema = new mongoose.Schema(
     author: { type: String },
     description: { type: String },
 
-    isbn: { type: String, unique: true, default: null },
+    isbn: { type: String, unique: true, sparse: true },
     qrCodeData: { type: String },
 
     image: { type: String }, // Book cover / camera capture
