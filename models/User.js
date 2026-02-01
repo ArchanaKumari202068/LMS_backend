@@ -13,10 +13,10 @@ const userSchema = new mongoose.Schema({
   
   // registration fee: non-refundable
   registrationFeePaid: { type: Boolean, default: false },
-  registraionFeeAmount: { type: Number, default: 0 },
+  registrationFeeAmount: { type: Number, default: 0 },
 
   // refundable advance/wallet - used toward book payments/fines
-  advanceBalance: { type: Number, default: 0 },
+  walletBalance: { type: Number, default: 0 },
   isBlocked: { type: Boolean, default: false },
   membershipLevel: { type: String, enum: ['standard','premium'], default: 'standard' },
 

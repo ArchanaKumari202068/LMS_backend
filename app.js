@@ -9,7 +9,9 @@ const authRoutes = require("./routes/authRoutes");
 const bookRoutes = require("./routes/bookRoutes");
 const bookCategoryRoutes = require("./routes/bookCategoryRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const adminSettingsRoutes = require("./routes/adminSettingsRoutes");
 const dotenv = require("dotenv");
+const userRoutes = require("./routes/userRoutes");
 
 dotenv.config();
 
@@ -48,6 +50,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/categories", bookCategoryRoutes);
 app.use('/api/admin', adminRoutes);
+app.use("/api/admin/settings", adminSettingsRoutes);
+app.use("/api/users", userRoutes);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>

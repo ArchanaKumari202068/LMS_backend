@@ -25,7 +25,7 @@ const bookSchema = new mongoose.Schema(
 
     quantity: { type: Number, default: 1 },
     availableCopies: { type: Number, default: 1 },
-    value: { type: Number, default: 0 },
+    price: { type: Number, default: 0 },
 
     scannedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     scannedAt: { type: Date },

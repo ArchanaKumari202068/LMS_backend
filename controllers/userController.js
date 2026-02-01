@@ -50,10 +50,10 @@ exports.adjustAdvance = async (req,res) => {
     const { amount, type } = req.body; // type: 'credit' or 'debit'
     const user = await User.findById(id);
     if(!user) return res.status(404).json({ message: 'User not found' });
-    if(type === 'credit') user.advanceBalance += Math.abs(amount);
-    else user.advanceBalance = Math.max(0, user.advanceBalance - Math.abs(amount));
+    if(type === 'credit') user.walletBalance += Math.abs(amount);
+    else user.walletBalance = Math.max(0, user.walletBalance - Math.abs(amount));
     await user.save();
-    res.json({ success:true, advanceBalance: user.advanceBalance });
+    res.json({ success:true, walletBalance: user.walletBalance });
   } catch(err){ res.status(500).json({ message: 'Server error' }); }
 };
 

@@ -5,7 +5,13 @@ const { generateQrString } = require("../utils/generateQrCode");
 exports.createBook = async (req, res) => {
   try {
     const value = req.body;
+    console.log("Request body received:", value);
+    console.log("Price value:", value.price, "Type:", typeof value.price);
+
     const incomingQty = Number(value.quantity || 1);
+    const incomingPrice = Number(value.price) || 0;
+
+    console.log("Converted price:", incomingPrice);
 
     //  Check if book with same ISBN exists
     const existingBook = value.isbn
@@ -16,6 +22,7 @@ exports.createBook = async (req, res) => {
       //  Increase quantity & available copies
       existingBook.quantity += incomingQty;
       existingBook.availableCopies += incomingQty;
+      existingBook.price = incomingPrice;
 
       // optional updates
       existingBook.scannedAt = new Date();
@@ -34,6 +41,7 @@ exports.createBook = async (req, res) => {
     const qrPayload = JSON.stringify({
       bookId: value.isbn,
       title: value.title,
+      price: incomingPrice,
     });
 
     const qrCodeString = await generateQrString(qrPayload);
@@ -44,6 +52,7 @@ exports.createBook = async (req, res) => {
       availableCopies: incomingQty,
       qrCodeData: qrCodeString,
       scannedAt: new Date(),
+      price: incomingPrice,
     });
 
     await book.save();
@@ -53,7 +62,6 @@ exports.createBook = async (req, res) => {
       message: "New book added successfully",
       data: book,
     });
-
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
